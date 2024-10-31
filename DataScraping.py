@@ -2,7 +2,7 @@ import requests
 import csv
 import time
 
-GITHUB_TOKEN = "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"  # Replace with your GitHub token
+GITHUB_TOKEN = "MY TOKEN"  
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 def get_users_in_location(location="Shanghai", min_followers=200):
@@ -19,21 +19,18 @@ def get_users_in_location(location="Shanghai", min_followers=200):
         if response.status_code != 200:
             print("Error fetching data:", response.json())
             break
-
         data = response.json()
         users.extend(data.get('items', []))
-
-        # Check if we reached the last page
         if len(data.get('items', [])) < per_page:
             break
 
         page += 1
-        time.sleep(2)  # Avoid rate-limiting issues by pausing between requests
+        time.sleep(2)  
 
     detailed_users = []
     for user in users:
         user_info = get_user_details(user['login'])
-        if user_info:  # Only add if user details are fetched successfully
+        if user_info:  
             detailed_users.append(user_info)
 
     return detailed_users
@@ -77,26 +74,19 @@ def get_user_repos(username):
 
     while len(all_repos) < 500:
         response = requests.get(f"{repos_url}?per_page={per_page}&page={page}", headers=HEADERS)
-        
         if response.status_code != 200:
             print(f"Failed to fetch repos for {username}: {response.status_code}")
             break
-
         repos_data = response.json()
-
         if not repos_data:
-            break  # Exit if no repos are returned, meaning no more pages
-
+            break  
         all_repos.extend(repos_data)
-
-        # Stop if there are fewer than `per_page` repos in this page (last page)
         if len(repos_data) < per_page:
             break
 
         page += 1
         time.sleep(1)
 
-    # Limit to the first 500 most recently pushed repos
     repos = []
     for repo in all_repos[:500]:
         repos.append({
@@ -114,7 +104,6 @@ def get_user_repos(username):
     return repos
 
 
-
 def save_users_to_csv(users):
     with open('users.csv', mode='w', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=['login', 'name', 'company', 'location', 'email', 'hireable', 'bio', 'public_repos', 'followers', 'following', 'created_at'])
@@ -129,7 +118,7 @@ def save_repos_to_csv(repos):
 
 
 if __name__ == "__main__":
-    users = get_users_in_location(location="Shanghai", min_followers=200)  # Replace 'YourLocation' with the desired location
+    users = get_users_in_location(location="Shanghai", min_followers=200)  
     save_users_to_csv(users)
 
     all_repos = []
